@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 
 exports.register = async (req, res) => {
   try {
-    const { username, email, password, avatarUrl } = req.body;
+    const { username, email, password, fullName, gender, avatarUrl, role, preferences, isActive } = req.body;
     if (!username || !email || !password) {
       return res.status(400).json({ message: 'Thiếu thông tin bắt buộc.' });
     }
@@ -16,7 +16,12 @@ exports.register = async (req, res) => {
       username,
       email,
       passwordHash: password,
-      avatarUrl
+      fullName,
+      gender,
+      avatarUrl,
+      role,
+      preferences,
+      isActive
     });
     await user.save();
     const userObj = user.toObject();
