@@ -4,9 +4,10 @@ const mongoose = require('mongoose');
 const connectDB = async () => {
  
   try {
-    await mongoose.connect('mongodb+srv://tranhai1009:002012@cluster0.xpdomyq.mongodb.net/Food_Recommendation?retryWrites=true&w=majority&appName=Cluster0', {
+    await mongoose.connect('', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+
     });
     console.log('Đã kết nối MongoDB!');
   } catch (err) {
