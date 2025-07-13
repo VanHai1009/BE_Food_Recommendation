@@ -26,7 +26,7 @@ router.post('/logout', authController.logout);
 router.get('/:id', usersController.getUserById);
 
 // Route cập nhật thông tin người dùng theo id
-router.patch('/:id', usersController.updateUserById);
+router.patch('/:id', upload.single('avatar'), usersController.updateUserById);
 
 // Route cập nhật preferences của người dùng
 router.patch('/:id/preferences', usersController.updateUserPreferences);

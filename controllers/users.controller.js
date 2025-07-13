@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const cloudinary = require('../config/cloudinary');
 
 // Lấy thông tin người dùng theo id
 exports.getUserById = async (req, res) => {
@@ -17,11 +18,38 @@ exports.getUserById = async (req, res) => {
 exports.updateUserById = async (req, res) => {
   try {
     const allowedFields = ['fullName', 'username', 'email','avatarUrl', 'gender', 'preferences', 'isActive'];
-    const updates = {};
-    for (const key of allowedFields) {
-      if (req.body[key] !== undefined) {
-        updates[key] = req.body[key];
+    let updates = {};
+    // Nếu gửi qua form-data với key data
+    if (req.body.data) {
+      const data = typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body.data;
+      for (const key of allowedFields) {
+        if (data[key] !== undefined) {
+          updates[key] = data[key];
+        }
       }
+    } else {
+      for (const key of allowedFields) {
+        if (req.body[key] !== undefined) {
+          updates[key] = req.body[key];
+        }
+      }
+    }
+    // Nếu có file avatar mới, upload lên Cloudinary
+    if (req.file) {
+      const streamUpload = (buffer) => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { resource_type: 'image' },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result.secure_url);
+            }
+          );
+          stream.end(buffer);
+        });
+      };
+      const avatarUrl = await streamUpload(req.file.buffer);
+      updates.avatarUrl = avatarUrl;
     }
     const user = await User.findByIdAndUpdate(
       req.params.id,
@@ -41,7 +69,8 @@ exports.updateUserById = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select('-passwordHash');
-    res.json(users);
+   
+    res.json({ total: users.length, users });
   } catch (err) {
     res.status(500).json({ message: 'Lỗi server', error: err.message });
   }
