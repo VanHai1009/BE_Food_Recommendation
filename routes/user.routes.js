@@ -5,12 +5,13 @@ const usersController = require('../controllers/users.controller');
 
 // Middleware xác thực (giả định sẽ tạo ở middlewares/auth.js)
 const authMiddleware = require('../middlewares/auth');
+const upload = require('../middlewares/upload');
 
 // Route GET đơn giản
 // router.get('/', userController.getAllUsers);
 
 // Route đăng ký tài khoản
-router.post('/register', authController.register);
+router.post('/register', upload.single('avatar'), authController.register);
 
 // Route đăng nhập tài khoản
 router.post('/login', authController.login);

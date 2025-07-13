@@ -1,25 +1,43 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const cloudinary = require('../config/cloudinary');
 
 exports.register = async (req, res) => {
   try {
-    const { username, email, password, fullName, gender, avatarUrl, role, preferences, isActive } = req.body;
-    if (!username || !email || !password) {
-      return res.status(400).json({ message: 'Thiếu thông tin bắt buộc.' });
+    const data = typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body.data;
+    const { username, email, password, fullName, gender, role, preferences, isActive } = data;
+
+    let avatarUrl = null;
+    if (req.file) {
+      // Upload lên Cloudinary
+      const streamUpload = (buffer) => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { resource_type: 'image' },
+            (error, result) => {
+              if (error) {
+                console.error('Cloudinary upload error:', error);
+                reject(error);
+              } else {
+                console.log('Cloudinary upload result:', result);
+                resolve(result.secure_url);
+              }
+            }
+          );
+          stream.end(buffer);
+        });
+      };
+      avatarUrl = await streamUpload(req.file.buffer);
     }
-    // Kiểm tra email hoặc username đã tồn tại
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-    if (existingUser) {
-      return res.status(409).json({ message: 'Email hoặc username đã tồn tại.' });
-    }
+
     const user = new User({
       username,
       email,
       passwordHash: password,
       fullName,
       gender,
-      avatarUrl,
+      avatarUrl, // Lưu URL
       role,
       preferences,
       isActive
@@ -33,9 +51,7 @@ exports.register = async (req, res) => {
   }
 };
 
-// exports.getAllUsers = (req, res) => {
-//   res.json({ message: 'API is working!' });
-// };
+
 
 exports.login = async (req, res) => {
   try {
