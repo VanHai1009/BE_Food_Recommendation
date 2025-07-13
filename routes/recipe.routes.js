@@ -19,4 +19,15 @@ router.get('/user/:userId', recipesController.getRecipesByUser);
 // Lấy tất cả recipes của user đang đăng nhập
 router.get('/myRecipes', authMiddleware, recipesController.getMyRecipes);
 
+// Tìm kiếm công thức theo tag và/hoặc nguyên liệu
+router.get('/search', recipesController.searchRecipes);
+
+// Lấy chi tiết một công thức theo id
+router.get('/:id', recipesController.getRecipeById);
+
+// Xoá một công thức theo id (cần đăng nhập)
+router.delete('/:id', authMiddleware, recipesController.deleteRecipe);
+
+
+
 module.exports = router; 
