@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat Test - User 2</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+  <h2>User 2 (userId: user2)</h2>
+  <input id="toUser" placeholder="Gửi tới userId..." />
+  <input id="message" placeholder="Nhập tin nhắn..." />
+  <button onclick="sendMessage()">Gửi</button>
+  <div id="chat"></div>
+  <script>
+    const socket = io('http://localhost:8000');
+    const userId = '68662b2c2c2790229221ab6b';
+    socket.emit('join', userId);
+
+    function sendMessage() {
+      const to = document.getElementById('toUser').value;
+      const message = document.getElementById('message').value;
+      socket.emit('private_message', { from: userId, to, message });
+      addMessage(`Bạn (tới ${to}): ${message}`);
+    }
+
+    socket.on('private_message', (data) => {
+      addMessage(`Từ ${data.from}: ${data.message}`);
+    });
+
+    function addMessage(msg) {
+      const chat = document.getElementById('chat');
+      const div = document.createElement('div');
+      div.textContent = msg;
+      chat.appendChild(div);
+    }
+  </script>
+</body>
+</html> 
